@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cook County Cooks — C³ | The Hunt Never Stops</title>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&display=swap" rel="stylesheet">
+
+<!-- Google model-viewer (3D logo) -->
+<script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+<style>
+/* ============ C3 DESIGN SYSTEM ============ */
+:root{
+  --c3-navy:#0b1026;
+  --c3-mid:#141b3d;
+  --c3-blue:#2196F3;
+  --c3-sky:#38b6ff;
+  --c3-gold:#FFC94A;
+  --c3-amber:#FFAA00;
+  --c3-flame:#F58220;
+  --c3-cream:#F5EFD8;
+  --c3-green:#00E676;
+  --c3-head:'Space Grotesk',sans-serif;
+  --c3-body:'DM Sans',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--c3-navy);
+  color:var(--c3-cream);
+  font-family:var(--c3-body);
+  overflow-x:hidden;
+  min-height:100vh;
+}
+body.c3-lock{overflow:hidden;height:100vh}
+img{max-width:100%}
+button{font-family:inherit;cursor:pointer}
+
+/* ============ SPLASH OVERLAY ============ */
+#c3-splash{
+  position:fixed;inset:0;z-index:9999;
+  background:radial-gradient(ellipse at 50% 120%, #1a2350 0%, var(--c3-navy) 55%, #060917 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;overflow:hidden;
+  transition:opacity 1s ease,visibility 1s;
+}
+#c3-splash.c3-gone{opacity:0;visibility:hidden;pointer-events:none}
+#c3-splash-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.c3-moon{
+  position:absolute;top:-14vmin;right:-10vmin;width:60vmin;height:60vmin;border-radius:50%;
+  background:radial-gradient(circle at 42% 42%, rgba(255,235,190,.95) 0%, rgba(255,201,74,.55) 28%, rgba(255,170,0,.18) 55%, transparent 72%);
+  filter:blur(6px);pointer-events:none;
+  animation:c3-moonpulse 9s ease-in-out infinite;
+}
+@keyframes c3-moonpulse{0%,100%{opacity:.85;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
+.c3-splash-inner{position:relative;z-index:2;padding:24px;max-width:640px;width:100%}
+.c3-splash-logo{
+  width:min(340px,70vw);margin:0 auto 34px;display:block;
+  filter:drop-shadow(0 0 28px rgba(56,182,255,.45)) drop-shadow(0 12px 40px rgba(0,0,0,.6));
+  animation:c3-breathe 5s ease-in-out infinite;
+}
+@keyframes c3-breathe{
+  0%,100%{transform:translateY(0) scale(1);filter:drop-shadow(0 0 22px rgba(56,182,255,.35)) drop-shadow(0 12px 40px rgba(0,0,0,.6))}
+  50%{transform:translateY(-14px) scale(1.025);filter:drop-shadow(0 0 44px rgba(255,201,74,.55)) drop-shadow(0 18px 46px rgba(0,0,0,.65))}
+}
+#c3-enter{
+  font-family:var(--c3-head);font-weight:700;
+  font-size:clamp(1.25rem,4.5vw,1.9rem);letter-spacing:.06em;
+  color:#160b00;background:linear-gradient(135deg,var(--c3-gold),var(--c3-flame) 60%,var(--c3-amber));
+  border:2px solid rgba(255,220,150,.8);border-radius:60px;
+  padding:20px 46px;min-height:64px;
+  box-shadow:0 0 34px rgba(245,130,32,.55),0 0 80px rgba(255,170,0,.28),inset 0 1px 0 rgba(255,255,255,.5);
+  animation:c3-btnpulse 2.2s ease-in-out infinite;
+  transition:transform .25s ease,box-shadow .25s ease;
+  position:relative;overflow:hidden;
+}
+#c3-enter::after{ /* hover flare sweep */
+  content:"";position:absolute;top:0;left:-80%;width:50%;height:100%;
+  background:linear-gradient(105deg,transparent,rgba(255,255,255,.6),transparent);
+  transform:skewX(-20deg);transition:left .55s ease;
+}
+#c3-enter:hover{transform:scale(1.06);box-shadow:0 0 55px rgba(245,130,32,.85),0 0 120px rgba(255,201,74,.45),inset 0 1px 0 rgba(255,255,255,.6)}
+#c3-enter:hover::after{left:130%}
+@keyframes c3-btnpulse{
+  0%,100%{box-shadow:0 0 26px rgba(245,130,32,.45),0 0 60px rgba(255,170,0,.2),inset 0 1px 0 rgba(255,255,255,.5)}
+  50%{box-shadow:0 0 48px rgba(245,130,32,.8),0 0 110px rgba(255,201,74,.4),inset 0 1px 0 rgba(255,255,255,.5)}
+}
+#c3-skip-intro{
+  display:inline-block;margin-top:26px;color:rgba(245,239,216,.55);
+  font-size:.95rem;text-decoration:none;letter-spacing:.04em;
+  border:none;background:none;transition:color .3s;
+}
+#c3-skip-intro:hover{color:var(--c3-gold)}
+
+/* ============ CINEMA (INTRO VIDEO) ============ */
+#c3-cinema{
+  position:fixed;inset:0;z-index:9998;background:#000;
+  display:none;opacity:0;transition:opacity 1s ease;
+}
+#c3-cinema.c3-show{display:block}
+#c3-cinema.c3-in{opacity:1}
+#c3-video{width:100%;height:100%;object-fit:cover;background:#000;display:block}
+#c3-skip-vid{
+  position:absolute;top:max(18px,env(safe-area-inset-top));right:18px;z-index:2;
+  background:rgba(11,16,38,.55);color:var(--c3-cream);
+  border:1px solid rgba(245,239,216,.35);border-radius:40px;
+  padding:10px 22px;font-size:.95rem;letter-spacing:.05em;
+  backdrop-filter:blur(6px);transition:background .3s,border-color .3s;
+}
+#c3-skip-vid:hover{background:rgba(245,130,32,.35);border-color:var(--c3-gold)}
+
+/* ============ LANDING ============ */
+#c3-landing{visibility:hidden;opacity:0;transition:opacity 1.2s ease}
+#c3-landing.c3-on{visibility:visible;opacity:1}
+#c3-ambient{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.c3-vignette{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse at center,transparent 55%,rgba(4,6,16,.55) 100%);
+}
+.c3-moon-amb{
+  position:fixed;top:-20vmin;left:-14vmin;width:70vmin;height:70vmin;border-radius:50%;z-index:0;
+  background:radial-gradient(circle at 55% 55%, rgba(255,235,190,.35) 0%, rgba(255,201,74,.18) 35%, transparent 68%);
+  filter:blur(10px);pointer-events:none;will-change:transform;
+}
+section{position:relative;z-index:1;padding:90px 20px}
+
+/* --- HERO --- */
+#c3-hero{
+  min-height:100vh;min-height:100svh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;padding-top:60px;
+}
+.c3-stage{position:relative;width:min(560px,92vw);margin:0 auto}
+#c3-mv{width:100%;height:420px;background:transparent;--poster-color:transparent;display:block;margin:0 auto}
+#c3-logo-fallback{
+  display:none;width:min(380px,75vw);margin:0 auto;
+  filter:drop-shadow(0 0 30px rgba(56,182,255,.4)) drop-shadow(0 18px 40px rgba(0,0,0,.55));
+  animation:c3-tilt3d 7s ease-in-out infinite;
+}
+.c3-stage.c3-fb #c3-mv{display:none}
+.c3-stage.c3-fb #c3-logo-fallback{display:block}
+@keyframes c3-tilt3d{
+  0%,100%{transform:perspective(900px) rotateY(-10deg) rotateX(4deg) translateY(0)}
+  25%{transform:perspective(900px) rotateY(0deg) rotateX(0deg) translateY(-16px)}
+  50%{transform:perspective(900px) rotateY(10deg) rotateX(-4deg) translateY(0)}
+  75%{transform:perspective(900px) rotateY(0deg) rotateX(2deg) translateY(-10px)}
+}
+.c3-ground-glow{
+  width:70%;height:56px;margin:-26px auto 0;border-radius:50%;
+  background:radial-gradient(ellipse at center, rgba(255,201,74,.5) 0%, rgba(245,130,32,.22) 45%, transparent 75%);
+  filter:blur(12px);animation:c3-glowbreath 4.5s ease-in-out infinite;
+}
+@keyframes c3-glowbreath{0%,100%{opacity:.7;transform:scaleX(1)}50%{opacity:1;transform:scaleX(1.12)}}
+.c3-h1{
+  font-family:var(--c3-head);font-weight:700;
+  font-size:clamp(2.4rem,8vw,5.2rem);line-height:1.02;letter-spacing:.02em;
+  margin-top:34px;
+  background:linear-gradient(90deg,var(--c3-gold),var(--c3-flame),var(--c3-sky),var(--c3-gold));
+  background-size:300% 100%;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  animation:c3-gradshift 7s linear infinite;
+  text-shadow:0 0 60px rgba(245,130,32,.25);
+}
+@keyframes c3-gradshift{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+.c3-sub{
+  margin-top:16px;font-size:clamp(1.05rem,3.2vw,1.45rem);
+  color:rgba(245,239,216,.85);letter-spacing:.14em;font-weight:500;
+}
+.c3-sub b{color:var(--c3-sky);font-weight:700}
+.c3-scrolldown{
+  margin-top:56px;display:flex;flex-direction:column;align-items:center;gap:8px;
+  color:rgba(245,239,216,.5);font-size:.8rem;letter-spacing:.25em;text-transform:uppercase;
+}
+.c3-chev{
+  width:22px;height:22px;border-right:2px solid var(--c3-gold);border-bottom:2px solid var(--c3-gold);
+  transform:rotate(45deg);animation:c3-chevbob 1.8s ease-in-out infinite;
+}
+@keyframes c3-chevbob{0%,100%{transform:rotate(45deg) translate(0,0);opacity:.4}50%{transform:rotate(45deg) translate(7px,7px);opacity:1}}
+
+/* --- entrance stagger on reveal --- */
+.c3-enter-item{opacity:0;transform:translateY(38px);transition:opacity 1s ease,transform 1s cubic-bezier(.2,.7,.2,1)}
+#c3-landing.c3-on .c3-enter-item{opacity:1;transform:translateY(0)}
+#c3-landing.c3-on .c3-enter-item:nth-child(1){transition-delay:.15s}
+#c3-landing.c3-on .c3-enter-item:nth-child(2){transition-delay:.4s}
+#c3-landing.c3-on .c3-enter-item:nth-child(3){transition-delay:.65s}
+#c3-landing.c3-on .c3-enter-item:nth-child(4){transition-delay:.9s}
+#c3-landing.c3-on .c3-enter-item:nth-child(5){transition-delay:1.15s}
+
+/* --- scroll reveals --- */
+.c3-reveal{opacity:0;transform:translateY(46px);transition:opacity .9s ease,transform .9s cubic-bezier(.2,.7,.2,1)}
+.c3-reveal.c3-vis{opacity:1;transform:translateY(0)}
+
+/* --- WIN THE WEEKEND --- */
+#c3-wtw{max-width:1200px;margin:0 auto}
+.c3-h2{
+  font-family:var(--c3-head);font-weight:700;text-align:center;
+  font-size:clamp(2rem,6.5vw,3.8rem);letter-spacing:.04em;
+  background:linear-gradient(90deg,var(--c3-amber),var(--c3-gold),#fff2c9,var(--c3-flame),var(--c3-amber));
+  background-size:280% 100%;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  animation:c3-gradshift 5s linear infinite;
+}
+.c3-h2-kicker{
+  text-align:center;color:rgba(56,182,255,.85);letter-spacing:.3em;
+  font-size:.85rem;text-transform:uppercase;margin-bottom:12px;font-weight:700;
+}
+.c3-tabs{display:flex;gap:16px;justify-content:center;margin:38px 0 26px;flex-wrap:wrap}
+.c3-tab{
+  font-family:var(--c3-head);font-weight:700;font-size:clamp(1rem,3vw,1.2rem);
+  letter-spacing:.05em;color:var(--c3-cream);
+  background:rgba(20,27,61,.8);border:2px solid rgba(56,182,255,.35);
+  border-radius:50px;padding:16px 34px;min-height:56px;
+  transition:all .3s ease;
+}
+.c3-tab:hover{border-color:var(--c3-sky);box-shadow:0 0 24px rgba(56,182,255,.35);transform:translateY(-2px)}
+.c3-tab.c3-active{
+  color:#160b00;background:linear-gradient(135deg,var(--c3-gold),var(--c3-flame));
+  border-color:rgba(255,220,150,.9);
+  box-shadow:0 0 30px rgba(245,130,32,.55),0 0 70px rgba(255,170,0,.25);
+}
+.c3-frame-wrap{
+  position:relative;border-radius:20px;padding:3px;
+  background:linear-gradient(135deg,rgba(56,182,255,.6),rgba(245,130,32,.7),rgba(255,201,74,.6));
+  box-shadow:0 0 45px rgba(33,150,243,.25),0 0 80px rgba(245,130,32,.18);
+}
+#c3-frame{
+  width:100%;height:85vh;border:none;border-radius:17px;display:block;
+  background:var(--c3-mid);
+}
+.c3-frame-loading{
+  position:absolute;inset:3px;display:flex;align-items:center;justify-content:center;
+  border-radius:17px;background:var(--c3-mid);color:rgba(245,239,216,.6);
+  font-family:var(--c3-head);letter-spacing:.15em;pointer-events:none;
+  transition:opacity .6s;font-size:1rem;
+}
+.c3-frame-loading.c3-hide{opacity:0}
+
+/* --- FOOTER --- */
+#c3-footer{text-align:center;padding:110px 20px 140px}
+.c3-cook{
+  font-family:var(--c3-head);font-weight:700;
+  font-size:clamp(2.6rem,9vw,5.5rem);letter-spacing:.02em;
+  background:linear-gradient(90deg,var(--c3-flame),var(--c3-gold),var(--c3-amber),var(--c3-flame));
+  background-size:280% 100%;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  animation:c3-gradshift 6s linear infinite;
+}
+.c3-foot-sub{margin-top:22px;color:rgba(245,239,216,.7);font-size:clamp(.95rem,2.8vw,1.15rem);letter-spacing:.05em}
+.c3-foot-sub span{color:var(--c3-green)}
+.c3-foot-rule{
+  width:120px;height:2px;margin:34px auto 0;border-radius:2px;
+  background:linear-gradient(90deg,transparent,var(--c3-gold),transparent);
+}
+
+/* --- REPLAY BUTTON --- */
+#c3-replay{
+  position:fixed;bottom:18px;right:18px;z-index:500;
+  background:rgba(20,27,61,.85);color:var(--c3-gold);
+  border:1px solid rgba(255,201,74,.45);border-radius:40px;
+  padding:10px 18px;font-size:.85rem;letter-spacing:.05em;
+  backdrop-filter:blur(6px);display:none;
+  transition:box-shadow .3s,transform .3s;
+}
+#c3-replay:hover{box-shadow:0 0 22px rgba(255,201,74,.45);transform:translateY(-2px)}
+#c3-replay.c3-show{display:block}
+
+/* --- RESPONSIVE --- */
+/* Portrait screens (iPads/phones held upright): letterbox the 16:9 intro
+   instead of cropping the fox out of frame */
+@media (orientation:portrait){
+  #c3-video{object-fit:contain}
+}
+/* Tablets */
+@media (max-width:1024px){
+  section{padding:76px 18px}
+  #c3-mv{height:380px}
+}
+/* Phones */
+@media (max-width:600px){
+  section{padding:64px 14px}
+  #c3-mv{height:340px}
+  #c3-frame{height:78vh}
+  #c3-enter{padding:18px 34px;width:min(92%,420px)}
+}
+/* Short landscape screens (phone landscape): keep splash contents on screen */
+@media (max-height:520px){
+  .c3-splash-logo{width:min(180px,32vh);margin-bottom:18px}
+  #c3-enter{padding:12px 28px;min-height:48px;font-size:1.1rem}
+  #c3-skip-intro{margin-top:12px}
+  #c3-hero{padding-top:30px}
+  #c3-mv{height:280px}
+}
+
+/* --- REDUCED MOTION --- */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.2s !important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= SPLASH ================= -->
+<div id="c3-splash">
+  <canvas id="c3-splash-canvas"></canvas>
+  <div class="c3-moon"></div>
+  <div class="c3-splash-inner">
+    <img class="c3-splash-logo" src="https://d8j0ntlcm91z4.cloudfront.net/user_3GQLFUsSG8h1lAit28TtMgjQC5u/hf_20260713_052645_7a563091-0128-42ca-9e15-2ea6d35e2d3b.png" alt="Cook County Cooks — blue fox chef logo">
+    <button id="c3-enter">🔥 ENTER THE KITCHEN</button>
+    <br>
+    <button id="c3-skip-intro">Skip intro →</button>
+  </div>
+</div>
+
+<!-- ================= INTRO VIDEO ================= -->
+<div id="c3-cinema">
+  <video id="c3-video" src="https://d8j0ntlcm91z4.cloudfront.net/user_3GQLFUsSG8h1lAit28TtMgjQC5u/hf_20260713_054129_5bfcd0b6-2d21-4715-963c-b2f343b5477f.mp4" playsinline preload="metadata"></video>
+  <button id="c3-skip-vid">Skip →</button>
+</div>
+
+<!-- ================= LANDING ================= -->
+<div id="c3-landing">
+  <canvas id="c3-ambient"></canvas>
+  <div class="c3-moon-amb" id="c3-moon-amb"></div>
+  <div class="c3-vignette"></div>
+
+  <!-- HERO -->
+  <section id="c3-hero">
+    <div class="c3-stage c3-enter-item" id="c3-stage">
+      <model-viewer id="c3-mv"
+        src="https://d3u0tzju9qaucj.cloudfront.net/7d051b5a-7bfe-49fe-a484-24e7b3a9458a/8d94b253-d3e6-4bda-ac4a-df1567dd8573.glb"
+        alt="Cook County Cooks 3D logo"
+        auto-rotate
+        camera-controls
+        disable-zoom
+        exposure="1.1"
+        shadow-intensity="0"
+        interaction-prompt="none"
+        rotation-per-second="28deg"></model-viewer>
+      <img id="c3-logo-fallback"
+        src="https://d8j0ntlcm91z4.cloudfront.net/user_3GQLFUsSG8h1lAit28TtMgjQC5u/hf_20260713_052645_7a563091-0128-42ca-9e15-2ea6d35e2d3b.png"
+        alt="Cook County Cooks logo">
+      <div class="c3-ground-glow"></div>
+    </div>
+    <h1 class="c3-h1 c3-enter-item">COOK COUNTY COOKS</h1>
+    <p class="c3-sub c3-enter-item"><b>C³</b> — The Hunt Never Stops.</p>
+    <div class="c3-scrolldown c3-enter-item">
+      <span>Scroll</span>
+      <div class="c3-chev"></div>
+    </div>
+  </section>
+
+  <!-- WIN THE WEEKEND -->
+  <section id="c3-wtw">
+    <div class="c3-reveal">
+      <p class="c3-h2-kicker">Live Leaderboards</p>
+      <h2 class="c3-h2">WIN THE WEEKEND</h2>
+      <div class="c3-tabs">
+        <button class="c3-tab c3-active" id="c3-tab-chi" data-key="chi">🌆 Chicago</button>
+        <button class="c3-tab" id="c3-tab-bs" data-key="bs">🏔️ Big South</button>
+      </div>
+      <div class="c3-frame-wrap">
+        <iframe id="c3-frame" title="Win The Weekend board" loading="lazy" allowfullscreen></iframe>
+        <div class="c3-frame-loading" id="c3-frame-loading">FIRING UP THE BOARD…</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <section id="c3-footer">
+    <div class="c3-reveal">
+      <h2 class="c3-cook">Now Go Cook. 🔥</h2>
+      <p class="c3-foot-sub">Cook County Cooks — Built for the team. By the team. Let&rsquo;s eat. <span>💰</span></p>
+      <div class="c3-foot-rule"></div>
+    </div>
+  </section>
+</div>
+
+<!-- Replay -->
+<button id="c3-replay">Replay intro 🎬</button>
+
+<script>
+(function(){
+  "use strict";
+  /* ---------- state (in-memory only) ---------- */
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var landingRevealed = false;
+  var frameLoadedKey = null;
+
+  var $ = function(id){ return document.getElementById(id); };
+  var splash = $("c3-splash"), cinema = $("c3-cinema"), video = $("c3-video"),
+      landing = $("c3-landing"), replayBtn = $("c3-replay");
+
+  document.body.classList.add("c3-lock");
+
+  /* ---------- starfield + fireflies engine ---------- */
+  function makeSky(canvas, fireflyCount){
+    var ctx = canvas.getContext("2d");
+    var stars = [], flies = [], raf = null, running = false;
+    var W = 0, H = 0;
+
+    function resize(){
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = canvas.clientWidth; H = canvas.clientHeight;
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      seed();
+    }
+    function seed(){
+      stars = []; flies = [];
+      var n = Math.floor((W * H) / 4200);
+      for (var i = 0; i < n; i++){
+        stars.push({ x: Math.random()*W, y: Math.random()*H, r: Math.random()*1.3 + .3,
+          p: Math.random()*Math.PI*2, s: .4 + Math.random()*1.4 });
+      }
+      for (var j = 0; j < fireflyCount; j++){
+        flies.push({ x: Math.random()*W, y: Math.random()*H, r: 1.4 + Math.random()*2.2,
+          a: Math.random()*Math.PI*2, v: .12 + Math.random()*.3,
+          p: Math.random()*Math.PI*2, w: .5 + Math.random()*1.2 });
+      }
+    }
+    function drawStatic(){
+      ctx.clearRect(0,0,W,H);
+      for (var i = 0; i < stars.length; i++){
+        var st = stars[i];
+        ctx.globalAlpha = .35 + .4*Math.abs(Math.sin(st.p));
+        ctx.fillStyle = "#dfe8ff";
+        ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, 6.2832); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+    function frame(t){
+      ctx.clearRect(0,0,W,H);
+      var i, st, f;
+      for (i = 0; i < stars.length; i++){
+        st = stars[i];
+        ctx.globalAlpha = .25 + .55*Math.abs(Math.sin(st.p + t*.0006*st.s));
+        ctx.fillStyle = "#dfe8ff";
+        ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, 6.2832); ctx.fill();
+      }
+      for (i = 0; i < flies.length; i++){
+        f = flies[i];
+        f.a += (Math.sin(t*.0004*f.w + f.p))*.03;
+        f.x += Math.cos(f.a)*f.v; f.y += Math.sin(f.a)*f.v*.7;
+        if (f.x < -20) f.x = W+20; if (f.x > W+20) f.x = -20;
+        if (f.y < -20) f.y = H+20; if (f.y > H+20) f.y = -20;
+        var glow = .45 + .55*Math.abs(Math.sin(t*.0012*f.w + f.p));
+        var g = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r*6);
+        g.addColorStop(0, "rgba(255,220,120," + (.85*glow) + ")");
+        g.addColorStop(.35, "rgba(255,170,0," + (.35*glow) + ")");
+        g.addColorStop(1, "rgba(255,170,0,0)");
+        ctx.globalAlpha = 1; ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(f.x, f.y, f.r*6, 0, 6.2832); ctx.fill();
+        ctx.fillStyle = "rgba(255,245,200," + glow + ")";
+        ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, 6.2832); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      if (running) raf = requestAnimationFrame(frame);
+    }
+    function start(){
+      resize();
+      if (reduced){ drawStatic(); return; }
+      if (!running){ running = true; raf = requestAnimationFrame(frame); }
+    }
+    function stop(){
+      running = false;
+      if (raf) cancelAnimationFrame(raf);
+    }
+    window.addEventListener("resize", function(){
+      resize();
+      if (reduced) drawStatic();
+    });
+    return { start: start, stop: stop };
+  }
+
+  var splashSky = makeSky($("c3-splash-canvas"), 16);
+  var ambientSky = makeSky($("c3-ambient"), 10);
+  splashSky.start();
+
+  /* ---------- reveal landing ---------- */
+  function revealLanding(){
+    if (!landingRevealed){
+      landingRevealed = true;
+      landing.classList.add("c3-on");
+      replayBtn.classList.add("c3-show");
+      ambientSky.start();
+      window.scrollTo(0, 0);
+    }
+    document.body.classList.remove("c3-lock");
+  }
+
+  function hideSplash(){
+    splash.classList.add("c3-gone");
+    setTimeout(function(){ splashSky.stop(); }, 1100);
+  }
+
+  /* ---------- cinema (intro video) ---------- */
+  function playIntro(){
+    cinema.classList.add("c3-show");
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){ cinema.classList.add("c3-in"); });
+    });
+    video.currentTime = 0;
+    video.muted = false;
+    video.volume = 1;
+    var p = video.play();
+    if (p && p.catch){
+      p.catch(function(){
+        // Autoplay-with-sound refused (rare here since gesture-driven): retry muted.
+        video.muted = true;
+        video.play().catch(function(){ endIntro(); });
+      });
+    }
+  }
+  function endIntro(){
+    cinema.classList.remove("c3-in"); // 1s fade via CSS
+    revealLanding();
+    setTimeout(function(){
+      cinema.classList.remove("c3-show");
+      video.pause();
+    }, 1000);
+  }
+
+  $("c3-enter").addEventListener("click", function(){
+    hideSplash();
+    playIntro();
+  });
+  $("c3-skip-intro").addEventListener("click", function(){
+    hideSplash();
+    revealLanding();
+  });
+  $("c3-skip-vid").addEventListener("click", endIntro);
+  video.addEventListener("ended", endIntro);
+  video.addEventListener("error", function(){
+    // Bad/missing video URL: don't strand the user on black.
+    if (cinema.classList.contains("c3-show")) endIntro();
+  });
+
+  replayBtn.addEventListener("click", function(){
+    playIntro();
+  });
+
+  /* ---------- 3D logo fallback ---------- */
+  var stage = $("c3-stage"), mv = $("c3-mv");
+  function useFallback(){ stage.classList.add("c3-fb"); }
+  if (mv){
+    mv.addEventListener("error", useFallback);
+    setTimeout(function(){
+      // Module never loaded (offline CDN, old browser) -> PNG fallback.
+      if (!window.customElements || !customElements.get("model-viewer")) useFallback();
+    }, 6000);
+    // Placeholder token means no real model yet.
+    if (mv.getAttribute("src").indexOf("{{") === 0) useFallback();
+  } else {
+    useFallback();
+  }
+
+  /* ---------- Win The Weekend tabs + lazy iframe ---------- */
+  var BOARDS = {
+    chi: "https://blufoxmobile.github.io/Win-The-Weekend---Chicago/",
+    bs:  "https://blufoxmobile.github.io/Win-The-Weekend---Big-South/"
+  };
+  var frame = $("c3-frame"), frameLoading = $("c3-frame-loading");
+  var tabChi = $("c3-tab-chi"), tabBs = $("c3-tab-bs");
+
+  function loadBoard(key){
+    if (frameLoadedKey === key) return;
+    frameLoadedKey = key;
+    frameLoading.classList.remove("c3-hide");
+    frame.src = BOARDS[key];
+  }
+  frame.addEventListener("load", function(){
+    if (frameLoadedKey) frameLoading.classList.add("c3-hide");
+  });
+  function selectTab(key){
+    tabChi.classList.toggle("c3-active", key === "chi");
+    tabBs.classList.toggle("c3-active", key === "bs");
+    loadBoard(key);
+  }
+  tabChi.addEventListener("click", function(){ selectTab("chi"); });
+  tabBs.addEventListener("click", function(){ selectTab("bs"); });
+
+  /* ---------- IntersectionObserver: reveals + iframe lazy-load ---------- */
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting){
+        e.target.classList.add("c3-vis");
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll(".c3-reveal").forEach(function(el){ io.observe(el); });
+
+  var ioFrame = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting){
+        loadBoard("chi"); // default board on first sight
+        ioFrame.disconnect();
+      }
+    });
+  }, { rootMargin: "200px" });
+  ioFrame.observe($("c3-wtw"));
+
+  /* ---------- parallax ---------- */
+  if (!reduced){
+    var moonAmb = $("c3-moon-amb"), stageEl = stage, ticking = false;
+    window.addEventListener("scroll", function(){
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function(){
+        var y = window.scrollY || 0;
+        moonAmb.style.transform = "translateY(" + (y * .18) + "px)";
+        if (y < window.innerHeight){
+          stageEl.style.transform = "translateY(" + (y * -.08) + "px)";
+        }
+        ticking = false;
+      });
+    }, { passive: true });
+  }
+})();
+</script>
+</body>
+</html>
